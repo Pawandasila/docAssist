@@ -1,9 +1,12 @@
 {
   "name": "backend",
   "version": "1.0.0",
-  "main": "index.js",
+  "main": "src/index.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "build": "tsup src/index.ts --format esm --clean --dts",
+    "start": "ts-node src/index.ts",
+    "dev": "tsup src/index.ts --watch --onSuccess \"node dist /index.js\"",
+    "check": "tsc --noEmit"
   },
   "keywords": [],
   "author": "",
