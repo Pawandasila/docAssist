@@ -3,10 +3,10 @@
   "version": "1.0.0",
   "main": "src/index.js",
   "scripts": {
-    "build": "tsup src/index.ts --format esm --clean --dts",
-    "start": "ts-node src/index.ts",
-    "dev": "tsup src/index.ts --watch --onSuccess \"node dist /index.js\"",
-    "check": "tsc --noEmit"
+    "build": "parity check --ci && tsup src/index.ts --format esm --clean --dts",
+    "start": "parity check --ci && ts-node src/index.ts",
+    "dev": "parity check && tsup src/index.ts --watch --onSuccess \"node dist /index.js\"",
+    "check": "parity check --ci && tsc --noEmit"
   },
   "keywords": [],
   "author": "",
@@ -17,5 +17,8 @@
     "ts-node": "^10.9.2",
     "tsup": "^8.5.1",
     "typescript": "^5.9.3"
+  },
+  "dependencies": {
+    "parity-ci": "^1.0.3"
   }
 }
