@@ -9,6 +9,7 @@ import { httpStatus } from "../config/Https.config.js";
 import {
   loginUserService,
   registerUserService,
+  refreshTokenService,
 } from "../services/auth.service.js";
 
 export const registerUser = asyncHandler(
@@ -42,3 +43,20 @@ export const loginUser = asyncHandler(async (req: Request, res: Response) => {
     },
   });
 });
+
+export const refreshToken = asyncHandler(
+  async (req: Request, res: Response) => {
+    const { refreshToken } = req.body;
+
+    const response = await refreshTokenService(refreshToken);
+
+    res.status(httpStatus.OK).json({
+      success: true,
+      message: response.message,
+      data: {
+        accessToken: response.accessToken,
+        refreshToken: response.refreshToken,
+      },
+    });
+  }
+);

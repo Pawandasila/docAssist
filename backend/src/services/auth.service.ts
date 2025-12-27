@@ -1,6 +1,10 @@
 import env from "../config/env.config.js";
 import User from "../models/user.model.js";
-import { BadRequestException } from "../utils/AppError.js";
+import {
+  BadRequestException,
+  UnauthorizedException,
+} from "../utils/AppError.js";
+import { ErrorCodeEnum } from "../enums/error-code.enum.js";
 import type {
   UserLoginType,
   UserRegisterType,
@@ -71,5 +75,59 @@ export const loginUserService = async (userData: UserLoginType) => {
     accessToken: token,
     refreshToken,
     message: "User logged in successfully",
+  };
+};
+
+export const refreshTokenService = async (refreshToken: string) => {
+  if (!refreshToken) {
+    throw new UnauthorizedException(
+      "Refresh token is required",
+      ErrorCodeEnum.AUTH_TOKEN_NOT_FOUND
+    );
+  }
+
+  // Find user with this refresh token
+  const user = await User.findOne({ refreshToken });
+
+  if (!user) {
+    throw new UnauthorizedException(
+      "Invalid refresh token",
+      ErrorCodeEnum.AUTH_INVALID_TOKEN
+    );
+  }
+
+  // Check if refresh token has expired
+  if (user.refreshTokenExpiresAt && user.refreshTokenExpiresAt < new Date()) {
+    // Clear expired refresh token
+    (user as any).refreshToken = undefined;
+    (user as any).refreshTokenExpiresAt = undefined;
+    await user.save();
+
+    throw new UnauthorizedException(
+      "Refresh token has expired",
+      ErrorCodeEnum.AUTH_TOKEN_EXPIRED
+    );
+  }
+
+  // Generate new access token
+  const accessToken = jwt.sign(
+    {
+      id: user._id,
+      role: user.role,
+    },
+    env.JWT_SECRET as jwt.Secret,
+    {
+      expiresIn: env.JWT_EXPIRES_IN,
+    } as jwt.SignOptions
+  );
+
+  // Generate new refresh token
+  const newRefreshToken = user.generateRefreshToken();
+  await user.save();
+
+  return {
+    accessToken,
+    refreshToken: newRefreshToken,
+    message: "Token refreshed successfully",
   };
 };

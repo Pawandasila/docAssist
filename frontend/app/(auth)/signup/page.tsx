@@ -6,29 +6,52 @@ import { useRouter } from "next/navigation";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Eye, EyeOff, Loader2, Mail, Lock, ArrowRight } from "lucide-react";
+import {
+  Eye,
+  EyeOff,
+  Loader2,
+  Mail,
+  Lock,
+  User,
+  Phone,
+  ArrowRight,
+  Check,
+} from "lucide-react";
 import { useAuth } from "@/context/auth.context";
 
-export default function LoginPage() {
+export default function SignupPage() {
   const router = useRouter();
-  const { login } = useAuth();
+  const { signup } = useAuth();
   const [showPassword, setShowPassword] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const [formData, setFormData] = useState({
+    name: "",
     email: "",
+    phone: "",
     password: "",
   });
   const [error, setError] = useState("");
 
+  // Password strength indicators
+  const hasMinLength = formData.password.length >= 6;
+  const hasUppercase = /[A-Z]/.test(formData.password);
+  const hasNumber = /[0-9]/.test(formData.password);
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setError("");
+
+    if (!hasMinLength) {
+      setError("Password must be at least 6 characters");
+      return;
+    }
+
     setIsLoading(true);
 
-    const result = await login(formData.email, formData.password);
+    const result = await signup(formData);
 
     if (result.success) {
-      router.push("/");
+      router.push("/login");
     } else {
       setError(result.message);
     }
@@ -39,19 +62,40 @@ export default function LoginPage() {
   return (
     <div className="w-full">
       {/* Card */}
-      <div className="bg-card/50 backdrop-blur-xl border border-border/50 rounded-2xl p-8 shadow-2xl">
+      <div className="bg-card/50 backdrop-blur-xl border border-border/50 rounded-2xl p-6 shadow-2xl">
         {/* Header */}
         <div className="text-center mb-8">
           <h1 className="text-2xl font-bold text-foreground mb-2">
-            Welcome back
+            Create account
           </h1>
           <p className="text-muted-foreground text-sm">
-            Sign in to continue to your account
+            Join us and start your health journey
           </p>
         </div>
 
         {/* Form */}
-        <form onSubmit={handleSubmit} className="space-y-5">
+        <form onSubmit={handleSubmit} className="space-y-4">
+          {/* Name Field */}
+          <div className="space-y-2">
+            <Label htmlFor="name" className="text-sm font-medium">
+              Full Name
+            </Label>
+            <div className="relative">
+              <User className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
+              <Input
+                id="name"
+                type="text"
+                placeholder="John Doe"
+                value={formData.name}
+                onChange={(e) =>
+                  setFormData({ ...formData, name: e.target.value })
+                }
+                className="pl-10 h-11 bg-background/50 border-border/50 focus:border-primary"
+                required
+              />
+            </div>
+          </div>
+
           {/* Email Field */}
           <div className="space-y-2">
             <Label htmlFor="email" className="text-sm font-medium">
@@ -73,19 +117,33 @@ export default function LoginPage() {
             </div>
           </div>
 
+          {/* Phone Field */}
+          <div className="space-y-2">
+            <Label htmlFor="phone" className="text-sm font-medium">
+              Phone Number
+            </Label>
+            <div className="relative">
+              <Phone className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
+              <Input
+                id="phone"
+                type="tel"
+                placeholder="9876543210"
+                value={formData.phone}
+                onChange={(e) =>
+                  setFormData({ ...formData, phone: e.target.value })
+                }
+                className="pl-10 h-11 bg-background/50 border-border/50 focus:border-primary"
+                maxLength={10}
+                required
+              />
+            </div>
+          </div>
+
           {/* Password Field */}
           <div className="space-y-2">
-            <div className="flex items-center justify-between">
-              <Label htmlFor="password" className="text-sm font-medium">
-                Password
-              </Label>
-              <Link
-                href="/forgot-password"
-                className="text-xs text-primary hover:underline"
-              >
-                Forgot password?
-              </Link>
-            </div>
+            <Label htmlFor="password" className="text-sm font-medium">
+              Password
+            </Label>
             <div className="relative">
               <Lock className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
               <Input
@@ -111,6 +169,33 @@ export default function LoginPage() {
                 )}
               </button>
             </div>
+
+            {/* Password Strength Indicators */}
+            {formData.password && (
+              <div className="flex gap-3 text-xs mt-2">
+                <span
+                  className={`flex items-center gap-1 ${
+                    hasMinLength ? "text-primary" : "text-muted-foreground"
+                  }`}
+                >
+                  <Check className="w-3 h-3" /> 6+ chars
+                </span>
+                <span
+                  className={`flex items-center gap-1 ${
+                    hasUppercase ? "text-primary" : "text-muted-foreground"
+                  }`}
+                >
+                  <Check className="w-3 h-3" /> Uppercase
+                </span>
+                <span
+                  className={`flex items-center gap-1 ${
+                    hasNumber ? "text-primary" : "text-muted-foreground"
+                  }`}
+                >
+                  <Check className="w-3 h-3" /> Number
+                </span>
+              </div>
+            )}
           </div>
 
           {/* Error Message */}
@@ -123,14 +208,14 @@ export default function LoginPage() {
           {/* Submit Button */}
           <Button
             type="submit"
-            className="w-full h-11 bg-primary hover:bg-primary/90 text-primary-foreground font-medium"
+            className="w-full h-11 bg-primary hover:bg-primary/90 text-primary-foreground font-medium mt-2"
             disabled={isLoading}
           >
             {isLoading ? (
               <Loader2 className="w-4 h-4 animate-spin" />
             ) : (
               <>
-                Sign in
+                Create account
                 <ArrowRight className="w-4 h-4 ml-2" />
               </>
             )}
@@ -144,25 +229,25 @@ export default function LoginPage() {
           </div>
           <div className="relative flex justify-center text-xs uppercase">
             <span className="bg-card/50 px-2 text-muted-foreground">
-              New here?
+              Already have an account?
             </span>
           </div>
         </div>
 
-        {/* Sign Up Link */}
-        <Link href="/signup">
+        {/* Login Link */}
+        <Link href="/login">
           <Button
             variant="outline"
             className="w-full h-11 border-border/50 hover:bg-accent/50"
           >
-            Create an account
+            Sign in instead
           </Button>
         </Link>
       </div>
 
       {/* Footer */}
-      <p className="text-center text-xs text-muted-foreground mt-6">
-        By signing in, you agree to our{" "}
+      <p className="text-center text-xs text-muted-foreground ">
+        By creating an account, you agree to our{" "}
         <Link href="/terms" className="text-primary hover:underline">
           Terms of Service
         </Link>{" "}
