@@ -14,10 +14,10 @@ export function ChatHeader() {
   return (
     <div className="flex items-center justify-between lg:p-4 md:p-2 p-1 border-b border-border/40 bg-primary/80 rounded-2xl backdrop-blur-md sticky top-0 z-10 w-full">
       <div className="flex items-center gap-2 overflow-hidden">
-        <div className="flex items-center gap-2">
+        <div className="flex items-center gap-2 p-0 hover:bg-transparent">
           <SidebarTrigger />
         </div>
-        <div className="flex items-center gap-2">
+        <div className="flex items-center gap-2 p-0 hover:bg-transparent">
           <h2 className="text-sm font-medium truncate">
             Find a good sci-fi movie tonight
           </h2>
