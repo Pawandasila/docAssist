@@ -23,15 +23,25 @@ const errorHandler: ErrorRequestHandler = (err, _req, res, _next) => {
 
   // Handle MongoDB Duplicate Key Error
   if ("code" in err && err.code === 11000) {
-    const key = Object.keys(
-      (err as { keyValue: Record<string, unknown> }).keyValue
-    )[0];
+    const keyValue = (err as { keyValue: Record<string, unknown> }).keyValue;
+    const field = Object.keys(keyValue)[0];
+
+    // Map field to specific error code
+    const errorCodeMap: Record<string, string> = {
+      email: ErrorCodeEnum.AUTH_EMAIL_ALREADY_EXISTS,
+      phone: ErrorCodeEnum.AUTH_PHONE_ALREADY_EXISTS,
+    };
+
+    const errorCode =
+      errorCodeMap[field ?? ""] ?? ErrorCodeEnum.DUPLICATE_FIELD;
+
     res.status(httpStatus.CONFLICT).json({
       success: false,
-      message: `${key} already exists`,
+      message: `${field} already exists`,
       data: null,
       error: {
-        code: ErrorCodeEnum.AUTH_EMAIL_ALREADY_EXISTS,
+        code: errorCode,
+        field,
       },
     });
     return;

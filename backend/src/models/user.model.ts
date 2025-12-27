@@ -189,7 +189,6 @@ const userSchema = new Schema<UserDocument, UserModel, IUserMethods>(
 
 userSchema.index({ email: 1 }, { unique: true });
 userSchema.index({ phone: 1 }, { unique: true });
-userSchema.index({ name: 1 }, { unique: true });
 userSchema.index({ role: 1 });
 
 userSchema.pre("save", async function () {
